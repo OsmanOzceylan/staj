@@ -1,0 +1,139 @@
+--3-4 saat c# 
+--w3schoolda joinlere kadar
+
+--snytax Tablodaki tüm kayıtları çeker
+SELECT * FROM Customers;
+
+--select sorgudaki veriyi seçmek için kullanılır
+SELECT CompanyName, City FROM Customers;
+
+--SELECT DISTINCT aynı olan değerleri tekrar döndürmez.
+SELECT DISTINCT Country FROM Customers;
+
+--Where kayıtları filtrelemek için kullanılır.
+SELECT * FROM Customers WHERE Country='Mexico';
+
+--Ordey by  sonuç kümesini artan veya azalan şekilde verir
+SELECT * FROM Products ORDER BY UnitPrice;
+
+--And  kayıtları birden fazla şeye göre filtrelemek için kullanılır Örneğin, İspanya'dan gelen ve 'G' harfiyle başlayan tüm müşterileri
+SELECT * FROM Customers WHERE Country = 'Spain' AND CompanyName LIKE 'G%';
+
+--Or Operatör kayıtları birden fazla koşula göre filtrelemek için kullanılır 
+--(örneğin, Almanya'dan gelen tüm müşterileri ve aynı zamanda İspanya'dan gelen müşterileri
+SELECT * FROM Customers WHERE Country = 'Germany' OR Country = 'Spain';
+
+--Not Op Diğer operatörlerin tam tersi sonuç vermesi örnek Yalnızca İspanya'dan OLMAYAN müşterileri seçin
+SELECT * FROM Customers WHERE NOT Country = 'Spain';
+
+--Insert Into  bir tabloya yeni kayıtlar eklemek için kullanılır.
+--INSERT INTO table_name (column1, column2, column3, ...) VALUES (value1, value2, value3, ...);
+INSERT INTO Customers (CompanyName, ContactName, Address, City, PostalCode, Country)
+VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
+
+--Null values  boş değerleri (NULL değerler) test etmek için kullanılır.
+SELECT CompanyName, ContactName, Address FROM Customers WHERE Address IS NULL;
+
+--Update bir tablodaki mevcut kayıtları değiştirmek için kullanılır. (veri güncelleme) 
+UPDATE Customers SET ContactName = 'Alfred Schmidt', City= 'Frankfurt' WHERE CustomerID = 1;
+--Delete bir tablodaki mevcut kayıtları silmek için kullanılır. (veri silme)
+DELETE FROM Customers WHERE CompanyName='Alfreds Futterkiste';
+
+--Select Top sorguda dönecek kayıt sayısını belirtmek için kullanılır.
+
+SELECT TOP 3 * FROM Customers;
+-- Aggregate Functions
+/*
+MIN() - En küçük değeri döndürür seçili sütunun içinde
+MAX() - içindeki en büyük değeri döndürür. Seçili sütun
+COUNT() - Bir içindeki satır sayısını döndürür ayarlamak
+SUM() - Bir öğesinin toplamını döndürür Sayısal sütun
+AVG() - A'nın ortalama değerini verir Sayısal sütun
+*/
+--Min / Max seçilen sütunun en küçük değerini döndürür. (MIN())  seçili sütunun en büyük değerini döndürür. (MAX())
+SELECT MIN(UnitPrice) FROM Products;
+SELECT MAX(UnitPrice) FROM Products;
+--Count Belirtilen ölçütle eşleşen satırlar. örnek toplam kaç ürün olduğunu gösterir.
+SELECT COUNT(*) FROM Products;
+--Sum sayısal bir sütunun toplam toplamını döndürür.
+SELECT SUM(Quantity) FROM [Order Details];
+--Avg sayısal bir sütunun ortalama değerini döndürür. 
+SELECT AVG(UnitPrice) FROM Products;
+--Like op  belirtilen bir deseni aramak için bir yan tümcede kullanılır. örnek "a" harfiyle başlayan tüm müşterileri seçin:
+SELECT * FROM Customers WHERE CompanyName LIKE 'a%';
+--Wildcard Characters 
+SELECT * FROM Customers WHERE CompanyName LIKE 'a%';
+--In op içindeki takısıdır filtreler.  örnek: "Almanya", "Fransa" veya "İngiltere"deki tüm müşterileri iade edin
+SELECT * FROM Customers WHERE Country IN ('Germany', 'France', 'UK');
+--Between Op belirli bir aralıktaki değerleri seçer. Değerler sayı, metin veya tarih olabilir. 
+--örnek Fiyatı 10 ile 20 arasında olan tüm ürünleri seçer:
+SELECT * FROM Products WHERE UnitPrice BETWEEN 10 AND 20;
+
+--AS bir tabloya veya tablodaki bir sütuna geçici bir ad vermek için kullanılır. 
+--Örnekte customerID sorgusu döndüğünde sütun adı ID gözükür
+SELECT CustomerID AS ID FROM Customers;
+
+--Müşteri Siparişleri:
+--Hangi müşteriler en çok sipariş vermiştir?
+select c.CustomerID, c.CompanyName, COUNT(o.OrderID) as SiparisSayisi from Customers C JOIN Orders o ON c.CustomerID = o.CustomerID
+GROUP BY c.CustomerID, c.CompanyName ORDER BY SiparisSayisi 
+--Sipariş sayısına göre müşteri sıralaması nedir?
+select c.CustomerID, c.CompanyName, COUNT(o.OrderID) as SiparisSayisi from Customers C JOIN Orders o ON c.CustomerID = o.CustomerID
+GROUP BY c.CustomerID, c.CompanyName ORDER BY SiparisSayisi DESC;
+
+--Ürün Satışları:
+--En çok satılan ürünler nelerdir?
+SELECT p.ProductName, SUM(od.Quantity) AS ToplamSatisAdedi FROM [Order Details] od JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY p.ProductName ORDER BY ToplamSatisAdedi 
+--Hangi ürünlerin stoğu azalmış ve yeniden sipariş verilmesi gerekmektedir?
+SELECT ProductID, ProductName, UnitsInStock, ReorderLevel FROM Products WHERE UnitsInStock <= ReorderLevel AND Discontinued = 0;
+
+--Tedarikçiler:
+--Hangi tedarikçiler en çok ürünü sağlamaktadır?
+SELECT s.CompanyName, COUNT(p.ProductID) AS SagladigiUrunSayisi FROM Suppliers s JOIN Products p ON s.SupplierID = p.SupplierID
+GROUP BY s.CompanyName ORDER BY SagladigiUrunSayisi DESC;
+--Hangi tedarikçilerden alınan ürünler en fazla satılmaktadır?
+SELECT s.CompanyName, SUM(od.Quantity) AS ToplamSatisMiktari FROM Suppliers s JOIN Products p ON s.SupplierID = p.SupplierID JOIN [Order Details] od ON p.ProductID = od.ProductID
+GROUP BY s.CompanyName ORDER BY ToplamSatisMiktari DESC;
+
+--Çalışan Performansı:
+--En çok satış yapan çalışanlar kimlerdir?
+SELECT e.EmployeeID, CONCAT(e.FirstName, ' ', e.LastName) AS CalisanAdSoyad, COUNT(o.OrderID) AS SiparisSayisi FROM Employees e
+JOIN Orders o ON e.EmployeeID = o.EmployeeID GROUP BY e.EmployeeID, e.FirstName, e.LastName ORDER BY SiparisSayisi 
+--Hangi çalışanların siparişleri en yüksek toplam değere sahiptir?
+SELECT e.EmployeeID, CONCAT(e.FirstName, ' ', e.LastName) AS CalisanAdSoyad, SUM(od.UnitPrice * od.Quantity) AS ToplamSatisTutari
+FROM Employees e JOIN Orders o ON e.EmployeeID = o.EmployeeID JOIN [Order Details] od ON o.OrderID = od.OrderID
+GROUP BY e.EmployeeID, e.FirstName, e.LastName ORDER BY ToplamSatisTutari DESC;
+
+--Kategorilere Göre Satışlar:
+--Hangi kategorideki ürünler en çok satılmaktadır?
+SELECT c.CategoryName, SUM(od.Quantity) AS ToplamSatisMiktari FROM Categories c JOIN Products p ON c.CategoryID = p.CategoryID
+JOIN [Order Details] od ON p.ProductID = od.ProductID GROUP BY c.CategoryName ORDER BY ToplamSatisMiktari DESC;
+
+--Kategori bazında satış miktarları nelerdir?
+SELECT c.CategoryName, SUM(od.Quantity) AS ToplamAdet, SUM(od.UnitPrice * od.Quantity) AS ToplamGelir
+FROM Categories c JOIN Products p ON c.CategoryID = p.CategoryID JOIN [Order Details] od ON p.ProductID = od.ProductID
+GROUP BY c.CategoryName ORDER BY ToplamGelir 
+
+
+/*	********** Northwind DB notları **********
+	Categories -> Kategoriler tablosu [CategoryID] [CategoryName] [Description] [Picture] Description (Açıklaması)
+	CustomerCustomerDemo ->  [CustomerID] [CustomerTypeID]
+	CustomerDemographics -> [CustomerTypeID] [CustomerDesc]
+	Customers -> [CustomerID][CompanyName][ContactName][ContactTitle] [Address][City][Region][PostalCode][Country][Phone][Fax] (Müşteri)
+	Employees -> [EmployeeID][LastName][FirstName][Title][TitleOfCourtesy][BirthDate][HireDate][Address][City][Region][PostalCode]
+      [Country][HomePhone][Extension][Photo][Notes][ReportsTo][PhotoPath] (çalışanlar)
+
+	EmployeeTerritories -> [EmployeeID][TerritoryID] (çalışan bölgeleri)
+	Order Details -> [OrderID][ProductID][UnitPrice][Quantity][Discount] (sipariş ) price(fiyat) Quantity(Miktar) Discount(İndirim)
+    Orders -> [OrderID][CustomerID][EmployeeID][OrderDate][RequiredDate][ShippedDate][ShipVia][Freight][ShipName][ShipAddress][ShipCity]
+      [ShipRegion][ShipPostalCode][ShipCountry]
+   
+    Products -> [ProductID][ProductName][SupplierID][CategoryID][QuantityPerUnit][UnitPrice][UnitsInStock][UnitsOnOrder][ReorderLevel][Discontinued]
+      Unit (Birim)
+	Region -> [RegionID] [RegionDescription] region(bölge)
+	Shippers -> [ShipperID][CompanyName][Phone] Shippers(Nakliyeciler)
+    Suppliers (Tedarikciler) -> [SupplierID][CompanyName][ContactName][ContactTitle][Address][City]
+	   [Region][PostalCode][Country][Phone][Fax][HomePage]
+    Territories (Bölgeler) -> [TerritoryID] [TerritoryDescription] [RegionID]
+*/
